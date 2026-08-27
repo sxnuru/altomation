@@ -78,7 +78,7 @@ export function ContactsTable() {
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             className="max-w-sm"
           />
-          <Select value={filter} onValueChange={(v) => { setFilter(v); setPage(1); }}>
+          <Select value={filter} onValueChange={(v) => { setFilter(v || "all"); setPage(1); }}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>

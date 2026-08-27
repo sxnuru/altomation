@@ -67,7 +67,7 @@ export function EmailComposer({ contact, isOpen, onClose }: EmailComposerProps) 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label>From</Label>
-              <Select value={fromEmail} onValueChange={setFromEmail}>
+              <Select value={fromEmail} onValueChange={(v) => setFromEmail(v || "faraz@antilineartech.com")}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select sender" />
                 </SelectTrigger>
