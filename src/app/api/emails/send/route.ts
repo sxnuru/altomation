@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 function personalizeContent(content: string, contact: any) {
   let personalized = content;
   const variables = {
@@ -23,6 +21,7 @@ function personalizeContent(content: string, contact: any) {
 
 export async function POST(req: Request) {
   try {
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const { contactId, fromEmail, subject, body } = await req.json();
 
     if (!contactId || !subject || !body) {
