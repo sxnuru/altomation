@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Contact {
+  id              String         @id @default(uuid())
+  email           String
+  first_name      String?
+  last_name       String?
+  company         String?
+  job_title       String?
+  phone           String?
+  website         String?
+  metadata        Json?
+  send_status     String         @default("Not Sent")
+  import_batch_id String?
+  import_batch    ImportBatch?   @relation(fields: [import_batch_id], references: [id])
+  conversations   Conversation[]
+  messages        Message[]
+  created_at      DateTime       @default(now())
+  updated_at      DateTime       @updatedAt
+
+  @@index([email])
+}
+
+model ImportBatch {
+  id                 String    @id @default(uuid())
+  filename           String
+  original_row_count Int
+  valid_count        Int
+  invalid_count      Int
+  duplicate_count    Int
+  contacts           Contact[]
+  created_at         DateTime  @default(now())
+}
+
+model Conversation {
+  id              String    @id @default(uuid())
+  contact_id      String
+  contact         Contact   @relation(fields: [contact_id], references: [id])
+  subject         String?
+  messages        Message[]
+  last_message_at DateTime?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+}
+
+model Message {
+  id                  String        @id @default(uuid())
+  conversation_id     String
+  conversation        Conversation  @relation(fields: [conversation_id], references: [id])
+  contact_id          String
+  contact             Contact       @relation(fields: [contact_id], references: [id])
+  direction           String        // "sent" or "received"
+  provider_message_id String?
+  from_email          String
+  to_email            String
+  subject             String?
+  text_body           String?
+  html_body           String?
+  status              String        // "Not Sent", "Sending", "Sent", "Failed", "Replied"
+  error_message       String?
+  sent_at             DateTime?
+  received_at         DateTime?
+  created_at          DateTime      @default(now())
+}
+
+model WebhookEvent {
+  id                String   @id @default(uuid())
+  provider          String
+  provider_event_id String   @unique
+  event_type        String
+  payload           Json
+  processed         Boolean  @default(false)
+  created_at        DateTime @default(now())
+}
