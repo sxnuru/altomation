@@ -37,9 +37,6 @@ export function Sidebar() {
 
   return (
     <div className="flex h-full w-64 flex-col border-r bg-white">
-      <div className="flex h-14 items-center border-b px-6">
-        <h1 className="text-lg font-bold tracking-tight">Outreach</h1>
-      </div>
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="grid items-start px-4 text-sm font-medium gap-1">
           <Link

@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { FileUpload } from "@/components/send/file-upload";
 import { ContactsTable } from "@/components/send/contacts-table";
 
@@ -14,7 +15,9 @@ export default function SendPage() {
       <FileUpload />
       
       <div className="flex-1 min-h-0 bg-white border border-border">
-        <ContactsTable />
+        <Suspense fallback={<div>Loading contacts...</div>}>
+          <ContactsTable />
+        </Suspense>
       </div>
     </div>
   );

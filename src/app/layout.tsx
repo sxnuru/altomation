@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Montserrat } from "next/font/google";
 import "./globals.css";
-import { Sidebar } from "@/components/layout/sidebar";
+import { AppShell } from "@/components/layout/app-shell";
 
 const montserrat = Montserrat({
   subsets: ["latin"],
@@ -26,13 +27,10 @@ export default function RootLayout({
       className={`${montserrat.variable} h-full antialiased font-sans`}
     >
       <body className="min-h-full flex flex-col bg-muted/30">
-        <div className="flex h-screen overflow-hidden">
-          <Toaster />
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto bg-white p-6 md:p-8 border-l">
-            {children}
-          </main>
-        </div>
+        <Toaster />
+        <AppShell>
+          {children}
+        </AppShell>
       </body>
     </html>
   );
