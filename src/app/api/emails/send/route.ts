@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
     let htmlFooter = "";
     
-    if (senderEmail === "faraz@antilineartech.com") {
+    if (senderEmail === "faraz@mail.antilineartech.com") {
       htmlFooter = `
 <br/>
 <table cellpadding="0" cellspacing="0" border="0" style="font-family:Montserrat,Arial,Helvetica,sans-serif;max-width:550px;">
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
 											<td style="padding-bottom:4px;" valign="inherit"><span style="font-size:12px;color:#555555;">+92 331 1170170</span></td>
 										</tr>
 										<tr valign="inherit">
-											<td style="padding-bottom:4px;" valign="inherit"><a href="mailto:faraz@antilineartech.com" style="font-size:12px;color:#555555;text-decoration:none;">faraz@antilineartech.com</a></td>
+											<td style="padding-bottom:4px;" valign="inherit"><a href="mailto:faraz@mail.antilineartech.com" style="font-size:12px;color:#555555;text-decoration:none;">faraz@mail.antilineartech.com</a></td>
 										</tr>
 										<tr valign="inherit">
 											<td style="padding-bottom:12px;" valign="inherit"><a href="https://antilineartech.com" style="font-size:12px;color:#555555;text-decoration:none;">antilineartech.com</a></td>
@@ -88,7 +88,7 @@ export async function POST(req: Request) {
 																	</table>
 																</a></td>
 															<td style="padding-right:6px;" valign="inherit">
-																<a href="mailto:faraz@antilineartech.com" style="text-decoration:none;">
+																<a href="mailto:faraz@mail.antilineartech.com" style="text-decoration:none;">
 																	<table cellpadding="0" cellspacing="0" style="width:24px;height:24px;background-color:#2b2b2b;border-radius:50%;" width="24" height="24" bgcolor="#2b2b2b">
 																		<tbody valign="middle">
 																			<tr valign="inherit">

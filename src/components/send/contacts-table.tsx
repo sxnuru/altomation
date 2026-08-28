@@ -19,6 +19,7 @@ export function ContactsTable() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [designation, setDesignation] = useState("");
+  const [location, setLocation] = useState("");
   const [page, setPage] = useState(1);
   const [data, setData] = useState<any>({ contacts: [], total: 0, totalPages: 1 });
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +38,7 @@ export function ContactsTable() {
       if (filter) params.set("filter", filter);
       if (currentIndustry) params.set("industry", currentIndustry);
       if (designation) params.set("designation", designation);
+      if (location) params.set("location", location);
 
       const res = await fetch(`/api/contacts?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch");
@@ -53,7 +55,7 @@ export function ContactsTable() {
   useEffect(() => {
     // Reset page when filters change
     setPage(1);
-  }, [search, filter, currentIndustry, designation]);
+  }, [search, filter, currentIndustry, designation, location]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -99,7 +101,13 @@ export function ContactsTable() {
             placeholder="Designation (e.g. CXO, Director)..." 
             value={designation}
             onChange={(e) => setDesignation(e.target.value)}
-            className="max-w-[250px]"
+            className="max-w-[200px]"
+          />
+          <Input 
+            placeholder="Location..." 
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            className="max-w-[150px]"
           />
           <Select value={filter} onValueChange={(v) => setFilter(v || "all")}>
             <SelectTrigger className="w-[150px]">
@@ -126,6 +134,7 @@ export function ContactsTable() {
               <TableHead>Name</TableHead>
               <TableHead>Company</TableHead>
               <TableHead>Designation</TableHead>
+              <TableHead>Location</TableHead>
               {currentIndustry === "" && <TableHead>Industry</TableHead>}
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Action</TableHead>
@@ -134,13 +143,13 @@ export function ContactsTable() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell className="h-24 text-center" colSpan={currentIndustry === "" ? 7 : 6}>
+                <TableCell className="h-24 text-center" colSpan={currentIndustry === "" ? 8 : 7}>
                   <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : data.contacts.length === 0 ? (
               <TableRow>
-                <TableCell className="font-medium text-muted-foreground text-center h-24" colSpan={currentIndustry === "" ? 7 : 6}>
+                <TableCell className="font-medium text-muted-foreground text-center h-24" colSpan={currentIndustry === "" ? 8 : 7}>
                   No contacts found. Upload a file to get started.
                 </TableCell>
               </TableRow>
@@ -151,6 +160,7 @@ export function ContactsTable() {
                   <TableCell>{[c.first_name, c.last_name].filter(Boolean).join(" ") || "-"}</TableCell>
                   <TableCell>{c.company || "-"}</TableCell>
                   <TableCell>{c.job_title || "-"}</TableCell>
+                  <TableCell>{c.location || "-"}</TableCell>
                   {currentIndustry === "" && <TableCell>{c.industry || "-"}</TableCell>}
                   <TableCell>
                     <Badge 

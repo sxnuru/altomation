@@ -16,6 +16,7 @@ model Contact {
   company         String?
   job_title       String?
   industry        String?
+  location        String?
   phone           String?
   website         String?
   metadata        Json?

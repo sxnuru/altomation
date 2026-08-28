@@ -32,6 +32,11 @@ export async function GET(req: Request) {
       where.job_title = { contains: designation, mode: "insensitive" };
     }
 
+    const location = searchParams.get("location") || "";
+    if (location && location !== "all") {
+      where.location = { contains: location, mode: "insensitive" };
+    }
+
     if (filter !== "all") {
       where.send_status = filter === "not_sent" ? "Not Sent" :
                           filter === "sent" ? "Sent" :

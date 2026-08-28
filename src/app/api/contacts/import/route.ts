@@ -66,6 +66,7 @@ export async function POST(req: Request) {
       const company = findField(['company', 'organization']);
       const job_title = findField(['job title', 'title', 'role', 'designation']);
       const industry = findField(['industry', 'sector', 'vertical']);
+      const location = findField(['location', 'city', 'state', 'country', 'address']);
       const phone = findField(['phone', 'mobile']);
       const website = findField(['website', 'url', 'site']);
 
@@ -80,6 +81,7 @@ export async function POST(req: Request) {
         company,
         job_title,
         industry,
+        location,
         phone,
         website,
         metadata

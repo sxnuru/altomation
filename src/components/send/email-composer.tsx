@@ -18,7 +18,7 @@ interface EmailComposerProps {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function EmailComposer({ contact, isOpen, onClose }: EmailComposerProps) {
-  const [fromEmail, setFromEmail] = useState("faraz@antilineartech.com");
+  const [fromEmail, setFromEmail] = useState("faraz@mail.antilineartech.com");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -67,12 +67,12 @@ export function EmailComposer({ contact, isOpen, onClose }: EmailComposerProps) 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
               <Label>From</Label>
-              <Select value={fromEmail} onValueChange={(v) => setFromEmail(v || "faraz@antilineartech.com")}>
+              <Select value={fromEmail} onValueChange={(v) => setFromEmail(v || "faraz@mail.antilineartech.com")}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select sender" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="faraz@antilineartech.com">faraz@antilineartech.com</SelectItem>
+                  <SelectItem value="faraz@mail.antilineartech.com">faraz@mail.antilineartech.com</SelectItem>
                   <SelectItem value="hello@antilineartech.com">hello@antilineartech.com</SelectItem>
                 </SelectContent>
               </Select>
