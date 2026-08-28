@@ -48,17 +48,17 @@ export async function updateSession(request: NextRequest) {
   }
 
   if (user) {
-    const { data: { authenticatorAssuranceLevel } } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
     
     // Check if user is fully authenticated
-    if (authenticatorAssuranceLevel === 'aal1' && !isMfaRoute && !isPublicRoute) {
+    if (data?.currentLevel === 'aal1' && !isMfaRoute && !isPublicRoute) {
       const url = request.nextUrl.clone()
       url.pathname = '/mfa-verify'
       return NextResponse.redirect(url)
     }
     
     // Redirect away from login/mfa if already fully authenticated
-    if (authenticatorAssuranceLevel === 'aal2' && (isPublicRoute || isMfaRoute)) {
+    if (data?.currentLevel === 'aal2' && (isPublicRoute || isMfaRoute)) {
       const url = request.nextUrl.clone()
       url.pathname = '/send'
       return NextResponse.redirect(url)
