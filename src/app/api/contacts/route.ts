@@ -40,7 +40,8 @@ export async function GET(req: Request) {
     if (filter !== "all") {
       where.send_status = filter === "not_sent" ? "Not Sent" :
                           filter === "sent" ? "Sent" :
-                          filter === "failed" ? "Failed" : undefined;
+                          filter === "failed" ? "Failed" : 
+                          filter === "bounced" ? "Bounced" : undefined;
     }
 
     const [contacts, total] = await Promise.all([

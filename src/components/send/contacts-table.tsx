@@ -118,6 +118,7 @@ export function ContactsTable() {
               <SelectItem value="not_sent">Not Sent</SelectItem>
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="failed">Failed</SelectItem>
+              <SelectItem value="bounced">Bounced</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" onClick={() => fetchContacts(true)} disabled={isRefreshing || isLoading}>
@@ -164,7 +165,7 @@ export function ContactsTable() {
                   {currentIndustry === "" && <TableCell>{c.industry || "-"}</TableCell>}
                   <TableCell>
                     <Badge 
-                      variant={c.send_status === "Sent" ? "default" : c.send_status === "Failed" ? "destructive" : "outline"} 
+                      variant={c.send_status === "Sent" ? "default" : (c.send_status === "Failed" || c.send_status === "Bounced") ? "destructive" : "outline"} 
                       className={`rounded-none ${c.send_status === "Sent" ? "bg-emerald-500 hover:bg-emerald-600 text-white" : ""}`}
                     >
                       {c.send_status}
@@ -172,7 +173,7 @@ export function ContactsTable() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
-                      {(c.send_status === "Sent" || c.send_status === "Replied") ? (
+                      {(c.send_status === "Sent" || c.send_status === "Replied" || c.send_status === "Failed" || c.send_status === "Bounced") ? (
                         <>
                           <Button variant="outline" size="sm" onClick={() => setSelectedThreadContact(c)} disabled={!c.conversations?.length}>
                             View

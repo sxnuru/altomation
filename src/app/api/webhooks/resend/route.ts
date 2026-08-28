@@ -116,6 +116,33 @@ export async function POST(req: Request) {
       });
     }
 
+    if (evt.type === "email.bounced" || evt.type === "email.delivery_delayed" || evt.type === "email.failed") {
+      const data = evt.data;
+      const provider_message_id = data.email_id || data.id;
+      const reason = data.bounce_summary || data.reason || data.error || "Delivery failed or bounced";
+      
+      if (provider_message_id) {
+        const message = await prisma.message.findFirst({
+          where: { provider_message_id }
+        });
+
+        if (message) {
+          await prisma.message.update({
+            where: { id: message.id },
+            data: {
+              status: "Bounced",
+              error_message: typeof reason === 'string' ? reason : JSON.stringify(reason)
+            }
+          });
+
+          await prisma.contact.update({
+            where: { id: message.contact_id },
+            data: { send_status: "Bounced" }
+          });
+        }
+      }
+    }
+
     // Mark as processed
     await prisma.webhookEvent.update({
       where: { provider_event_id: uniqueEventId },

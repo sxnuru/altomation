@@ -95,6 +95,11 @@ export function MessageView({ message, isOpen, onClose }: MessageViewProps) {
                   className="text-sm prose prose-sm max-w-none" 
                   dangerouslySetInnerHTML={{ __html: msg.html_body || msg.text_body?.replace(/\n/g, "<br>") || "" }} 
                 />
+                {(msg.status === "Failed" || msg.status === "Bounced") && msg.error_message && (
+                  <div className="mt-2 text-xs text-destructive bg-destructive/10 p-2 rounded">
+                    <strong>Delivery Failed:</strong> {msg.error_message}
+                  </div>
+                )}
               </div>
             ))
           )}
