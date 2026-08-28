@@ -22,6 +22,16 @@ export async function GET(req: Request) {
       ];
     }
 
+    const industry = searchParams.get("industry") || "";
+    if (industry && industry !== "all") {
+      where.industry = { equals: industry, mode: "insensitive" };
+    }
+
+    const designation = searchParams.get("designation") || "";
+    if (designation && designation !== "all") {
+      where.job_title = { contains: designation, mode: "insensitive" };
+    }
+
     if (filter !== "all") {
       where.send_status = filter === "not_sent" ? "Not Sent" :
                           filter === "sent" ? "Sent" :

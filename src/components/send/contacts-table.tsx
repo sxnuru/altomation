@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,8 +13,12 @@ import { EmailComposer } from "@/components/send/email-composer";
 import { MessageView } from "@/components/received/message-view";
 
 export function ContactsTable() {
+  const searchParams = useSearchParams();
+  const currentIndustry = searchParams.get("industry") || "";
+
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [designation, setDesignation] = useState("");
   const [page, setPage] = useState(1);
   const [data, setData] = useState<any>({ contacts: [], total: 0, totalPages: 1 });
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +31,14 @@ export function ContactsTable() {
     else setIsLoading(true);
     
     try {
-      const res = await fetch(`/api/contacts?page=${page}&search=${search}&filter=${filter}`);
+      const params = new URLSearchParams();
+      params.set("page", page.toString());
+      if (search) params.set("search", search);
+      if (filter) params.set("filter", filter);
+      if (currentIndustry) params.set("industry", currentIndustry);
+      if (designation) params.set("designation", designation);
+
+      const res = await fetch(`/api/contacts?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const json = await res.json();
       setData(json);
@@ -36,7 +48,12 @@ export function ContactsTable() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, search, filter]);
+  }, [page, search, filter, currentIndustry, designation]);
+
+  useEffect(() => {
+    // Reset page when filters change
+    setPage(1);
+  }, [search, filter, currentIndustry, designation]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -75,11 +92,17 @@ export function ContactsTable() {
           <Input 
             placeholder="Search contacts..." 
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="max-w-sm"
+            onChange={(e) => setSearch(e.target.value)}
+            className="max-w-[200px]"
           />
-          <Select value={filter} onValueChange={(v) => { setFilter(v || "all"); setPage(1); }}>
-            <SelectTrigger className="w-[180px]">
+          <Input 
+            placeholder="Designation (e.g. CXO, Director)..." 
+            value={designation}
+            onChange={(e) => setDesignation(e.target.value)}
+            className="max-w-[250px]"
+          />
+          <Select value={filter} onValueChange={(v) => setFilter(v || "all")}>
+            <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -102,6 +125,8 @@ export function ContactsTable() {
               <TableHead>Email</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Company</TableHead>
+              <TableHead>Designation</TableHead>
+              {currentIndustry === "" && <TableHead>Industry</TableHead>}
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
@@ -109,13 +134,13 @@ export function ContactsTable() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell className="h-24 text-center" colSpan={5}>
+                <TableCell className="h-24 text-center" colSpan={currentIndustry === "" ? 7 : 6}>
                   <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : data.contacts.length === 0 ? (
               <TableRow>
-                <TableCell className="font-medium text-muted-foreground text-center h-24" colSpan={5}>
+                <TableCell className="font-medium text-muted-foreground text-center h-24" colSpan={currentIndustry === "" ? 7 : 6}>
                   No contacts found. Upload a file to get started.
                 </TableCell>
               </TableRow>
@@ -125,6 +150,8 @@ export function ContactsTable() {
                   <TableCell className="font-medium">{c.email}</TableCell>
                   <TableCell>{[c.first_name, c.last_name].filter(Boolean).join(" ") || "-"}</TableCell>
                   <TableCell>{c.company || "-"}</TableCell>
+                  <TableCell>{c.job_title || "-"}</TableCell>
+                  {currentIndustry === "" && <TableCell>{c.industry || "-"}</TableCell>}
                   <TableCell>
                     <Badge variant={c.send_status === "Sent" ? "default" : c.send_status === "Failed" ? "destructive" : "outline"} className="rounded-none">
                       {c.send_status}

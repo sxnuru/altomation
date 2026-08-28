@@ -46,10 +46,26 @@ export async function POST(req: Request) {
         return found ? row[found]?.toString().trim() : null;
       };
 
-      const first_name = findField(['first name', 'firstname', 'first_name']);
-      const last_name = findField(['last name', 'lastname', 'last_name']);
+      let first_name = findField(['first name', 'firstname', 'first_name']);
+      let last_name = findField(['last name', 'lastname', 'last_name']);
+      
+      if (!first_name && !last_name) {
+        const nameKey = Object.keys(row).find(k => {
+           const lower = k.toLowerCase().trim();
+           return lower === 'name' || lower === 'full name' || lower === 'fullname' || lower === 'contact name';
+        });
+        if (nameKey && row[nameKey]) {
+           const fullName = row[nameKey].toString().trim();
+           const parts = fullName.split(' ');
+           first_name = parts[0] || null;
+           if (parts.length > 1) {
+             last_name = parts.slice(1).join(' ');
+           }
+        }
+      }
       const company = findField(['company', 'organization']);
-      const job_title = findField(['job title', 'title', 'role']);
+      const job_title = findField(['job title', 'title', 'role', 'designation']);
+      const industry = findField(['industry', 'sector', 'vertical']);
       const phone = findField(['phone', 'mobile']);
       const website = findField(['website', 'url', 'site']);
 
@@ -63,6 +79,7 @@ export async function POST(req: Request) {
         last_name,
         company,
         job_title,
+        industry,
         phone,
         website,
         metadata
