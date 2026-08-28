@@ -146,14 +146,17 @@ export function ContactsTable() {
               </TableRow>
             ) : (
               data.contacts.map((c: any) => (
-                <TableRow key={c.id}>
+                <TableRow key={c.id} className={c.send_status === "Sent" ? "bg-emerald-50/50 hover:bg-emerald-100/50" : ""}>
                   <TableCell className="font-medium">{c.email}</TableCell>
                   <TableCell>{[c.first_name, c.last_name].filter(Boolean).join(" ") || "-"}</TableCell>
                   <TableCell>{c.company || "-"}</TableCell>
                   <TableCell>{c.job_title || "-"}</TableCell>
                   {currentIndustry === "" && <TableCell>{c.industry || "-"}</TableCell>}
                   <TableCell>
-                    <Badge variant={c.send_status === "Sent" ? "default" : c.send_status === "Failed" ? "destructive" : "outline"} className="rounded-none">
+                    <Badge 
+                      variant={c.send_status === "Sent" ? "default" : c.send_status === "Failed" ? "destructive" : "outline"} 
+                      className={`rounded-none ${c.send_status === "Sent" ? "bg-emerald-500 hover:bg-emerald-600 text-white" : ""}`}
+                    >
                       {c.send_status}
                     </Badge>
                   </TableCell>
