@@ -33,9 +33,9 @@ export default function LoginPage() {
       }
 
       // Check if MFA is enrolled
-      const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       
-      if (data?.currentLevel === 'aal2') {
+      if (mfaData?.currentLevel === 'aal2') {
         router.push("/send");
       } else {
         router.push("/mfa-verify"); // Let mfa-verify handle routing to mfa-setup if no factors
