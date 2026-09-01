@@ -109,29 +109,66 @@ export async function POST(req: Request) {
       }
     });
 
-    // We will do an upsert or bulk insert ignoring duplicates.
-    // Prisma createMany does not support 'skipDuplicates' returning the count of skipped accurately.
-    // So we fetch existing emails first to calculate duplicate count.
+    // We fetch existing contacts fully to see if we can fill missing values
     const emails = parsedContacts.map(c => c!.email);
     const existingContacts = await prisma.contact.findMany({
-      where: { email: { in: emails } },
-      select: { email: true }
+      where: { email: { in: emails } }
     });
     
-    const existingEmails = new Set(existingContacts.map(c => c.email));
-    const newContacts = parsedContacts.filter(c => !existingEmails.has(c!.email));
+    const existingContactsMap = new Map(existingContacts.map(c => [c.email, c]));
     
-    duplicateCount = existingEmails.size;
+    const newContacts = [];
+    const updatePromises = [];
+    let updatedCount = 0;
+
+    for (const parsed of parsedContacts) {
+      if (!parsed) continue;
+      
+      const existing = existingContactsMap.get(parsed.email);
+      if (existing) {
+        duplicateCount++;
+        
+        // Fill missing values
+        const updateData: any = {};
+        let hasUpdates = false;
+        const fields = ['first_name', 'last_name', 'company', 'job_title', 'industry', 'location', 'phone', 'website'];
+        
+        for (const field of fields) {
+          // If the DB has no value, but the CSV has a value, update it.
+          if (!existing[field as keyof typeof existing] && parsed[field as keyof typeof parsed]) {
+            updateData[field] = parsed[field as keyof typeof parsed];
+            hasUpdates = true;
+          }
+        }
+        
+        if (hasUpdates) {
+          updatePromises.push(
+            prisma.contact.update({
+              where: { id: existing.id },
+              data: updateData
+            })
+          );
+          updatedCount++;
+        }
+      } else {
+        newContacts.push(parsed);
+      }
+    }
+    
     validCount = newContacts.length;
 
     if (newContacts.length > 0) {
       await prisma.contact.createMany({
         data: newContacts.map(c => ({
-          ...c!,
+          ...c,
           import_batch_id: importBatch.id
         })),
         skipDuplicates: true
       });
+    }
+
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
     }
 
     // Update batch stats
@@ -149,6 +186,7 @@ export async function POST(req: Request) {
         total: contacts.length,
         imported: validCount,
         duplicates: duplicateCount,
+        updated: updatedCount,
         invalid: invalidCount
       }
     });
