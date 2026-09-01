@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Send, Briefcase, AlertCircle } from "lucide-react";
+import { Send, Briefcase, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export function Sidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentIndustry = searchParams.get("industry");
   const [industries, setIndustries] = useState<string[]>([]);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchIndustries = async () => {
@@ -36,52 +38,74 @@ export function Sidebar() {
   const sendActive = pathname === "/send" || pathname === "/";
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-white">
+    <div className={cn("relative flex h-full flex-col border-r bg-white transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
       <div className="flex-1 overflow-y-auto py-4">
-        <nav className="grid items-start px-4 text-sm font-medium gap-1">
-            <Link
-              href="/send"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-foreground transition-all hover:bg-muted",
-                sendActive && !currentIndustry ? "bg-muted font-semibold" : "text-muted-foreground"
-              )}
-            >
-              <Send className="h-4 w-4" />
-              All Contacts
-            </Link>
+        <nav className="grid items-start px-2 text-sm font-medium gap-1">
+          <Link
+            href="/send"
+            title="All Contacts"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md text-foreground transition-all hover:bg-muted",
+              sendActive && !currentIndustry ? "bg-muted font-semibold" : "text-muted-foreground",
+              isCollapsed && "justify-center px-0"
+            )}
+          >
+            <Send className="h-4 w-4 shrink-0" />
+            {!isCollapsed && <span>All Contacts</span>}
+          </Link>
 
-            <Link
-              href="/logs"
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-md text-foreground transition-all hover:bg-muted",
-                pathname === "/logs" ? "bg-muted font-semibold text-destructive" : "text-muted-foreground"
-              )}
-            >
-              <AlertCircle className="h-4 w-4" />
-              Bounce Logs
-            </Link>
+          <Link
+            href="/logs"
+            title="Bounce Logs"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2 rounded-md text-foreground transition-all hover:bg-muted",
+              pathname === "/logs" ? "bg-muted font-semibold text-destructive" : "text-muted-foreground",
+              isCollapsed && "justify-center px-0"
+            )}
+          >
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {!isCollapsed && <span>Bounce Logs</span>}
+          </Link>
 
-          {industries.length > 0 && (
+
+
+          {industries.length > 0 && !isCollapsed && (
             <div className="mt-4 mb-2 px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Industries
             </div>
+          )}
+          
+          {industries.length > 0 && isCollapsed && (
+             <div className="my-2 border-b border-muted"></div>
           )}
 
           {industries.map((industry) => (
             <Link
               key={industry}
               href={`/send?industry=${encodeURIComponent(industry)}`}
+              title={industry}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-md text-foreground transition-all hover:bg-muted",
-                currentIndustry === industry ? "bg-muted font-semibold" : "text-muted-foreground"
+                currentIndustry === industry ? "bg-muted font-semibold" : "text-muted-foreground",
+                isCollapsed && "justify-center px-0"
               )}
             >
-              <Briefcase className="h-4 w-4" />
-              {industry}
+              <Briefcase className="h-4 w-4 shrink-0" />
+              {!isCollapsed && <span className="truncate">{industry}</span>}
             </Link>
           ))}
         </nav>
       </div>
+
+      <Button 
+        variant="outline" 
+        size="icon" 
+        className="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full shadow-sm z-10 bg-white" 
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+      >
+        {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+      </Button>
     </div>
   );
 }

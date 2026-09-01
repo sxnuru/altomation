@@ -12,6 +12,16 @@ import { toast } from "sonner";
 import { EmailComposer } from "@/components/send/email-composer";
 import { MessageView } from "@/components/received/message-view";
 
+const DEFAULT_COLUMNS = [
+  { id: "email", label: "Email" },
+  { id: "name", label: "Name" },
+  { id: "company", label: "Company" },
+  { id: "designation", label: "Designation" },
+  { id: "location", label: "Location" },
+  { id: "industry", label: "Industry" },
+  { id: "status", label: "Status" },
+];
+
 export function ContactsTable() {
   const searchParams = useSearchParams();
   const currentIndustry = searchParams.get("industry") || "";
@@ -26,6 +36,78 @@ export function ContactsTable() {
   const [selectedContact, setSelectedContact] = useState<any>(null);
   const [selectedThreadContact, setSelectedThreadContact] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Column Reordering State
+  const [columns, setColumns] = useState(DEFAULT_COLUMNS);
+  const [draggedColId, setDraggedColId] = useState<string | null>(null);
+  const [dragOverColId, setDragOverColId] = useState<string | null>(null);
+  const [dragDirection, setDragDirection] = useState<"left" | "right">("left");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("contactsTableColumns");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Ensure validity
+        const valid = parsed.every((col: any) => DEFAULT_COLUMNS.some(d => d.id === col.id)) && parsed.length === DEFAULT_COLUMNS.length;
+        if (valid) {
+          setColumns(parsed);
+        }
+      } catch (e) {}
+    }
+  }, []);
+
+  const handleDragStart = (e: React.DragEvent, id: string) => {
+    setDraggedColId(id);
+    e.dataTransfer.effectAllowed = "move";
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.classList.add("opacity-50");
+    }
+  };
+
+  const handleDragEnd = (e: React.DragEvent) => {
+    setDraggedColId(null);
+    if (e.currentTarget instanceof HTMLElement) {
+      e.currentTarget.classList.remove("opacity-50");
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    if (!draggedColId || draggedColId === targetId) {
+      setDragOverColId(null);
+      return;
+    }
+    
+    setDragOverColId(targetId);
+    
+    const draggedIdx = columns.findIndex(c => c.id === draggedColId);
+    const targetIdx = columns.findIndex(c => c.id === targetId);
+    setDragDirection(targetIdx > draggedIdx ? "right" : "left");
+  };
+
+  const handleDragLeave = () => {
+    setDragOverColId(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetId: string) => {
+    e.preventDefault();
+    setDragOverColId(null);
+    if (!draggedColId || draggedColId === targetId) return;
+
+    const oldIndex = columns.findIndex(c => c.id === draggedColId);
+    const newIndex = columns.findIndex(c => c.id === targetId);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newCols = [...columns];
+    const [removed] = newCols.splice(oldIndex, 1);
+    newCols.splice(newIndex, 0, removed);
+    
+    setColumns(newCols);
+    localStorage.setItem("contactsTableColumns", JSON.stringify(newCols));
+  };
+
 
   const fetchContacts = useCallback(async (manualRefresh = false) => {
     if (manualRefresh) setIsRefreshing(true);
@@ -50,10 +132,9 @@ export function ContactsTable() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, search, filter, currentIndustry, designation]);
+  }, [page, search, filter, currentIndustry, designation, location]);
 
   useEffect(() => {
-    // Reset page when filters change
     setPage(1);
   }, [search, filter, currentIndustry, designation, location]);
 
@@ -70,7 +151,6 @@ export function ContactsTable() {
     return () => window.removeEventListener("refresh-contacts", handleRefresh);
   }, [fetchContacts]);
 
-  // Construct a dummy message object so MessageView can fetch the thread
   const threadMessage = selectedThreadContact?.conversations?.[0] ? {
     conversation_id: selectedThreadContact.conversations[0].id,
     contact_id: selectedThreadContact.id,
@@ -131,46 +211,79 @@ export function ContactsTable() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Email</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Company</TableHead>
-              <TableHead>Designation</TableHead>
-              <TableHead>Location</TableHead>
-              {currentIndustry === "" && <TableHead>Industry</TableHead>}
-              <TableHead>Status</TableHead>
+              {columns.map((col) => {
+                if (col.id === "industry" && currentIndustry !== "") return null;
+                
+                const isDragOver = dragOverColId === col.id;
+                const borderClass = isDragOver 
+                  ? dragDirection === "right" 
+                    ? "border-r-4 border-r-blue-500" 
+                    : "border-l-4 border-l-blue-500"
+                  : "";
+
+                return (
+                  <TableHead 
+                    key={col.id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, col.id)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={(e) => handleDragOver(e, col.id)}
+                    onDragLeave={handleDragLeave}
+                    onDrop={(e) => handleDrop(e, col.id)}
+                    className={`cursor-grab active:cursor-grabbing select-none hover:bg-muted/50 transition-all ${draggedColId === col.id ? "opacity-30 bg-muted" : ""} ${borderClass}`}
+                    title="Drag to reorder"
+                  >
+                    {col.label}
+                  </TableHead>
+                );
+              })}
               <TableHead className="text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell className="h-24 text-center" colSpan={currentIndustry === "" ? 8 : 7}>
+                <TableCell className="h-24 text-center" colSpan={currentIndustry === "" ? columns.length + 1 : columns.length}>
                   <Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : data.contacts.length === 0 ? (
               <TableRow>
-                <TableCell className="font-medium text-muted-foreground text-center h-24" colSpan={currentIndustry === "" ? 8 : 7}>
+                <TableCell className="font-medium text-muted-foreground text-center h-24" colSpan={currentIndustry === "" ? columns.length + 1 : columns.length}>
                   No contacts found. Upload a file to get started.
                 </TableCell>
               </TableRow>
             ) : (
               data.contacts.map((c: any) => (
                 <TableRow key={c.id} className={c.send_status === "Sent" ? "bg-emerald-50/50 hover:bg-emerald-100/50" : ""}>
-                  <TableCell className="font-medium">{c.email}</TableCell>
-                  <TableCell>{[c.first_name, c.last_name].filter(Boolean).join(" ") || "-"}</TableCell>
-                  <TableCell>{c.company || "-"}</TableCell>
-                  <TableCell>{c.job_title || "-"}</TableCell>
-                  <TableCell>{c.location || "-"}</TableCell>
-                  {currentIndustry === "" && <TableCell>{c.industry || "-"}</TableCell>}
-                  <TableCell>
-                    <Badge 
-                      variant={c.send_status === "Sent" ? "default" : (c.send_status === "Failed" || c.send_status === "Bounced") ? "destructive" : "outline"} 
-                      className={`rounded-none ${c.send_status === "Sent" ? "bg-emerald-500 hover:bg-emerald-600 text-white" : ""}`}
-                    >
-                      {c.send_status}
-                    </Badge>
-                  </TableCell>
+                  {columns.map((col) => {
+                    if (col.id === "industry" && currentIndustry !== "") return null;
+                    
+                    let content = null;
+                    if (col.id === "email") content = c.email;
+                    else if (col.id === "name") content = [c.first_name, c.last_name].filter(Boolean).join(" ") || "-";
+                    else if (col.id === "company") content = c.company || "-";
+                    else if (col.id === "designation") content = c.job_title || "-";
+                    else if (col.id === "location") content = c.location || "-";
+                    else if (col.id === "industry") content = c.industry || "-";
+                    else if (col.id === "status") {
+                      content = (
+                        <Badge 
+                          variant={c.send_status === "Sent" ? "default" : (c.send_status === "Failed" || c.send_status === "Bounced") ? "destructive" : "outline"} 
+                          className={`rounded-none ${c.send_status === "Sent" ? "bg-emerald-500 hover:bg-emerald-600 text-white" : ""}`}
+                        >
+                          {c.send_status}
+                        </Badge>
+                      );
+                    }
+
+                    return (
+                      <TableCell key={col.id} className={col.id === "email" ? "font-medium" : ""}>
+                        {content}
+                      </TableCell>
+                    );
+                  })}
+                  
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       {(c.send_status === "Sent" || c.send_status === "Replied" || c.send_status === "Failed" || c.send_status === "Bounced") ? (

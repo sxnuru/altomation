@@ -82,11 +82,13 @@ export async function POST(req: Request) {
           }
         });
       } else {
-        await prisma.contact.update({
+        contact = await prisma.contact.update({
           where: { id: contact.id },
           data: { send_status: "Replied" }
         });
       }
+
+
 
       let conversation = await prisma.conversation.findFirst({
         where: { contact_id: contact.id },
@@ -135,10 +137,12 @@ export async function POST(req: Request) {
             }
           });
 
-          await prisma.contact.update({
+          const updatedContact = await prisma.contact.update({
             where: { id: message.contact_id },
             data: { send_status: "Bounced" }
           });
+          
+
         }
       }
     }

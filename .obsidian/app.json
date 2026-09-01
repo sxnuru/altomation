@@ -1,0 +1,12 @@
+{
+  "userIgnoreFilters": [
+    "node_modules/",
+    ".next/",
+    ".git/",
+    "public/",
+    "prisma/"
+  ],
+  "attachmentFolderPath": "00-Meta/Attachments",
+  "newFileLocation": "root",
+  "promptDelete": false
+}
