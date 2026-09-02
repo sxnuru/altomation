@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     }
 
     const { filename, contacts } = result.data;
-    
+
     if (contacts.length === 0) {
       return NextResponse.json({ error: "No contacts provided" }, { status: 400 });
     }
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       if (!email || !z.string().email().safeParse(email).success) {
         return null; // Invalid
       }
-      
+
       const findField = (keys: string[]) => {
         const found = Object.keys(row).find(k => keys.some(key => k.toLowerCase().includes(key)));
         return found ? row[found]?.toString().trim() : null;
@@ -48,19 +48,19 @@ export async function POST(req: Request) {
 
       let first_name = findField(['first name', 'firstname', 'first_name']);
       let last_name = findField(['last name', 'lastname', 'last_name']);
-      
+
       if (!first_name && !last_name) {
         const nameKey = Object.keys(row).find(k => {
-           const lower = k.toLowerCase().trim();
-           return lower === 'name' || lower === 'full name' || lower === 'fullname' || lower === 'contact name';
+          const lower = k.toLowerCase().trim();
+          return lower === 'name' || lower === 'full name' || lower === 'fullname' || lower === 'contact name';
         });
         if (nameKey && row[nameKey]) {
-           const fullName = row[nameKey].toString().trim();
-           const parts = fullName.split(' ');
-           first_name = parts[0] || null;
-           if (parts.length > 1) {
-             last_name = parts.slice(1).join(' ');
-           }
+          const fullName = row[nameKey].toString().trim();
+          const parts = fullName.split(' ');
+          first_name = parts[0] || null;
+          if (parts.length > 1) {
+            last_name = parts.slice(1).join(' ');
+          }
         }
       }
       const company = findField(['company', 'organization']);
@@ -73,7 +73,7 @@ export async function POST(req: Request) {
       // Remove extracted fields from metadata
       const metadata = { ...row };
       delete metadata[emailKey];
-      
+
       return {
         email,
         first_name,
@@ -114,25 +114,25 @@ export async function POST(req: Request) {
     const existingContacts = await prisma.contact.findMany({
       where: { email: { in: emails } }
     });
-    
+
     const existingContactsMap = new Map(existingContacts.map(c => [c.email, c]));
-    
+
     const newContacts = [];
     const updatePromises = [];
     let updatedCount = 0;
 
     for (const parsed of parsedContacts) {
       if (!parsed) continue;
-      
+
       const existing = existingContactsMap.get(parsed.email);
       if (existing) {
         duplicateCount++;
-        
+
         // Fill missing values
         const updateData: any = {};
         let hasUpdates = false;
         const fields = ['first_name', 'last_name', 'company', 'job_title', 'industry', 'location', 'phone', 'website'];
-        
+
         for (const field of fields) {
           // If the DB has no value, but the CSV has a value, update it.
           if (!existing[field as keyof typeof existing] && parsed[field as keyof typeof parsed]) {
@@ -140,7 +140,7 @@ export async function POST(req: Request) {
             hasUpdates = true;
           }
         }
-        
+
         if (hasUpdates) {
           updatePromises.push(
             prisma.contact.update({
@@ -154,7 +154,7 @@ export async function POST(req: Request) {
         newContacts.push(parsed);
       }
     }
-    
+
     validCount = newContacts.length;
 
     if (newContacts.length > 0) {

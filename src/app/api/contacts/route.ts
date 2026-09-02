@@ -50,7 +50,20 @@ export async function GET(req: Request) {
         skip,
         take: limit,
         orderBy: { created_at: "desc" },
-        include: { conversations: true }
+        include: { 
+          conversations: true,
+          messages: {
+            where: { direction: "sent", status: { in: ["Sent", "Replied"] } },
+            orderBy: { sent_at: "desc" },
+            take: 1,
+            select: { sent_at: true }
+          },
+          _count: {
+            select: {
+              messages: { where: { direction: "sent", status: { in: ["Sent", "Replied"] } } }
+            }
+          }
+        }
       }),
       prisma.contact.count({ where })
     ]);

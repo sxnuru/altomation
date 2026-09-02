@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { UploadCloud, FileType2, Loader2 } from "lucide-react";
+import { UploadCloud, Loader2 } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";

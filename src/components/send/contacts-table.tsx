@@ -11,6 +11,7 @@ import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { EmailComposer } from "@/components/send/email-composer";
 import { MessageView } from "@/components/received/message-view";
+import { formatDistanceToNow } from "date-fns";
 
 const DEFAULT_COLUMNS = [
   { id: "email", label: "Email" },
@@ -19,6 +20,8 @@ const DEFAULT_COLUMNS = [
   { id: "designation", label: "Designation" },
   { id: "location", label: "Location" },
   { id: "industry", label: "Industry" },
+  { id: "sent_count", label: "Emails Sent" },
+  { id: "last_sent", label: "Last Sent" },
   { id: "status", label: "Status" },
 ];
 
@@ -53,7 +56,7 @@ export function ContactsTable() {
         if (valid) {
           setColumns(parsed);
         }
-      } catch (e) {}
+      } catch {}
     }
   }, []);
 
@@ -126,7 +129,7 @@ export function ContactsTable() {
       if (!res.ok) throw new Error("Failed to fetch");
       const json = await res.json();
       setData(json);
-    } catch (err) {
+    } catch {
       toast.error("Failed to load contacts");
     } finally {
       setIsLoading(false);
@@ -266,6 +269,21 @@ export function ContactsTable() {
                     else if (col.id === "designation") content = c.job_title || "-";
                     else if (col.id === "location") content = c.location || "-";
                     else if (col.id === "industry") content = c.industry || "-";
+                    else if (col.id === "sent_count") {
+                      content = (
+                        <Badge variant="secondary" className="font-mono">
+                          {c._count?.messages || 0}
+                        </Badge>
+                      );
+                    }
+                    else if (col.id === "last_sent") {
+                      const lastMsg = c.messages?.[0];
+                      if (lastMsg?.sent_at) {
+                        content = <span className="text-muted-foreground whitespace-nowrap">{formatDistanceToNow(new Date(lastMsg.sent_at), { addSuffix: true })}</span>;
+                      } else {
+                        content = "-";
+                      }
+                    }
                     else if (col.id === "status") {
                       content = (
                         <Badge 
