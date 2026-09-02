@@ -337,7 +337,7 @@ export function ContactsTable() {
                     else if (col.id === "last_sent") {
                       const lastMsg = c.messages?.[0];
                       if (lastMsg?.sent_at) {
-                        content = <span className="text-muted-foreground whitespace-nowrap">{formatDistanceToNow(new Date(lastMsg.sent_at), { addSuffix: true })}</span>;
+                        content = <span className="text-muted-foreground">{formatDistanceToNow(new Date(lastMsg.sent_at), { addSuffix: true })}</span>;
                       } else {
                         content = "-";
                       }
