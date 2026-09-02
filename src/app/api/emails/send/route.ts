@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { Resend } from "resend";
+import { getAuthUser } from "@/lib/auth-user";
 
 function personalizeContent(content: string, contact: any) {
   let personalized = content;
@@ -26,6 +27,11 @@ export async function POST(req: Request) {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const { contactId, fromEmail, subject, body } = await req.json();
+
+    const authUser = await getAuthUser();
+    if (!authUser) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     if (!contactId || !subject || !body) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -161,6 +167,7 @@ export async function POST(req: Request) {
         data: {
           conversation_id: conversation.id,
           contact_id: contact.id,
+          user_id: authUser.id,
           direction: "sent",
           from_email: senderEmail,
           to_email: contact.email,
@@ -185,6 +192,7 @@ export async function POST(req: Request) {
       data: {
         conversation_id: conversation.id,
         contact_id: contact.id,
+        user_id: authUser.id,
         direction: "sent",
         provider_message_id: data?.id,
         from_email: senderEmail,

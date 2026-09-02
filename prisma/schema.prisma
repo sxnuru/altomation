@@ -8,6 +8,16 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model User {
+  id         String    @id @default(uuid())
+  email      String    @unique
+  name       String?
+  role       String    @default("user") // "admin" or "user"
+  messages   Message[]
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+}
+
 model Contact {
   id              String         @id @default(uuid())
   email           String
@@ -59,6 +69,8 @@ model Message {
   conversation        Conversation  @relation(fields: [conversation_id], references: [id])
   contact_id          String
   contact             Contact       @relation(fields: [contact_id], references: [id])
+  user_id             String?
+  user                User?         @relation(fields: [user_id], references: [id])
   direction           String        // "sent" or "received"
   provider_message_id String?
   from_email          String

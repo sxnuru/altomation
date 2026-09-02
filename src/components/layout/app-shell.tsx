@@ -7,8 +7,9 @@ import { Sidebar } from "@/components/layout/sidebar";
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuthRoute = pathname === "/login" || pathname?.startsWith("/mfa-");
+  const isAdminRoute = pathname?.startsWith("/admin");
 
-  if (isAuthRoute) {
+  if (isAuthRoute || isAdminRoute) {
     return <main className="flex-1 h-screen overflow-hidden bg-muted/30">{children}</main>;
   }
 

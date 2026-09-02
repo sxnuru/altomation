@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Send, Briefcase, AlertCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { Send, Briefcase, AlertCircle, ChevronLeft, ChevronRight, LayoutDashboard, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -13,6 +15,27 @@ export function Sidebar() {
   const currentIndustry = searchParams.get("industry");
   const [industries, setIndustries] = useState<string[]>([]);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const { isAdmin } = await res.json();
+          if (isAdmin) setIsAdmin(true);
+        }
+      } catch (err) {}
+    };
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchIndustries = async () => {
@@ -36,6 +59,60 @@ export function Sidebar() {
   }, []);
 
   const sendActive = pathname === "/send" || pathname === "/";
+  const inAdminView = pathname?.startsWith("/admin");
+
+  const handleAdminSignOut = async () => {
+    await fetch("/api/admin/logout", { method: "POST" });
+    setIsAdmin(false);
+    router.push("/admin/login");
+  };
+
+  if (inAdminView) {
+    return (
+      <div className={cn("relative flex h-full flex-col border-r bg-white transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
+        <div className="flex-1 overflow-y-auto py-4">
+          <nav className="grid items-start px-2 text-sm font-medium gap-1">
+            <Link
+              href="/admin"
+              title="Admin Dashboard"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md text-foreground transition-all hover:bg-muted",
+                pathname === "/admin" ? "bg-muted font-semibold text-primary" : "text-muted-foreground",
+                isCollapsed && "justify-center px-0"
+              )}
+            >
+              <LayoutDashboard className="h-4 w-4 shrink-0" />
+              {!isCollapsed && <span>Admin Dashboard</span>}
+            </Link>
+          </nav>
+        </div>
+
+        <Button 
+          variant="outline" 
+          size="icon" 
+          className="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full shadow-sm z-10 bg-white" 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+          {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+        </Button>
+        <div className="p-4 border-t">
+          <Button
+            variant="ghost"
+            className={cn(
+              "w-full flex items-center justify-start gap-3 text-muted-foreground hover:text-foreground",
+              isCollapsed && "justify-center px-0"
+            )}
+            onClick={handleAdminSignOut}
+            title="Sign Out"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!isCollapsed && <span>Sign Out</span>}
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn("relative flex h-full flex-col border-r bg-white transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
@@ -66,6 +143,8 @@ export function Sidebar() {
             <AlertCircle className="h-4 w-4 shrink-0" />
             {!isCollapsed && <span>Bounce Logs</span>}
           </Link>
+
+
 
 
 
@@ -106,6 +185,21 @@ export function Sidebar() {
       >
         {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
       </Button>
+      <div className="p-4 border-t">
+        <Button
+          variant="ghost"
+          className={cn(
+            "w-full flex items-center justify-start gap-3 text-muted-foreground hover:text-foreground",
+            isCollapsed && "justify-center px-0"
+          )}
+          onClick={handleSignOut}
+          title="Sign Out"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          {!isCollapsed && <span>Sign Out</span>}
+        </Button>
+      </div>
+
     </div>
   );
 }

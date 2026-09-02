@@ -38,10 +38,11 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  const isPublicRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname.startsWith('/auth')
+  const isAuthRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname.startsWith('/auth')
+  const isAdminRoute = request.nextUrl.pathname.startsWith('/admin')
   const isMfaRoute = request.nextUrl.pathname === '/mfa-verify' || request.nextUrl.pathname === '/mfa-setup'
 
-  if (!user && !isPublicRoute) {
+  if (!user && !isAuthRoute && !isAdminRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
@@ -51,14 +52,14 @@ export async function updateSession(request: NextRequest) {
     const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
     
     // Check if user is fully authenticated
-    if (data?.currentLevel === 'aal1' && !isMfaRoute && !isPublicRoute) {
+    if (data?.currentLevel === 'aal1' && !isMfaRoute && !isAuthRoute && !isAdminRoute) {
       const url = request.nextUrl.clone()
       url.pathname = '/mfa-verify'
       return NextResponse.redirect(url)
     }
     
     // Redirect away from login/mfa if already fully authenticated
-    if (data?.currentLevel === 'aal2' && (isPublicRoute || isMfaRoute)) {
+    if (data?.currentLevel === 'aal2' && (isAuthRoute || isMfaRoute)) {
       const url = request.nextUrl.clone()
       url.pathname = '/send'
       return NextResponse.redirect(url)
