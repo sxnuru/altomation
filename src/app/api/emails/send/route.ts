@@ -4,9 +4,12 @@ import { Resend } from "resend";
 
 function personalizeContent(content: string, contact: any) {
   let personalized = content;
-  const variables = {
+  const variables: Record<string, string> = {
     first_name: contact.first_name || "",
+    "first name": contact.first_name || "",
     last_name: contact.last_name || "",
+    "last name": contact.last_name || "",
+    name: [contact.first_name, contact.last_name].filter(Boolean).join(" ") || "",
     company: contact.company || "",
     email: contact.email || ""
   };

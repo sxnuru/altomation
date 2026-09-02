@@ -80,3 +80,38 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+    const { email, first_name, last_name, company, job_title, industry, location, phone, website } = body;
+
+    if (!email) {
+      return NextResponse.json({ error: "Email is required" }, { status: 400 });
+    }
+
+    const existing = await prisma.contact.findFirst({ where: { email } });
+    if (existing) {
+      return NextResponse.json({ error: "Contact with this email already exists" }, { status: 400 });
+    }
+
+    const contact = await prisma.contact.create({
+      data: {
+        email,
+        first_name,
+        last_name,
+        company,
+        job_title,
+        industry,
+        location,
+        phone,
+        website
+      }
+    });
+
+    return NextResponse.json(contact, { status: 201 });
+  } catch (error) {
+    console.error("Create contact error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

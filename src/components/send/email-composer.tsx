@@ -99,7 +99,7 @@ export function EmailComposer({ contact, isOpen, onClose }: EmailComposerProps) 
               onChange={(e) => setBody(e.target.value)}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Available variables: {"{{first_name}}"}, {"{{last_name}}"}, {"{{company}}"}, {"{{email}}"}
+              Available variables: {"{{first name}}"}, {"{{last name}}"}, {"{{name}}"}, {"{{first_name}}"}, {"{{last_name}}"}, {"{{company}}"}, {"{{email}}"}
             </p>
           </div>
         </div>

@@ -10,8 +10,10 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { EmailComposer } from "@/components/send/email-composer";
+import { AddContactModal } from "@/components/send/add-contact-modal";
 import { MessageView } from "@/components/received/message-view";
 import { formatDistanceToNow } from "date-fns";
+import { Plus } from "lucide-react";
 
 const DEFAULT_COLUMNS = [
   { id: "email", label: "Email" },
@@ -39,6 +41,7 @@ export function ContactsTable() {
   const [selectedContact, setSelectedContact] = useState<any>(null);
   const [selectedThreadContact, setSelectedThreadContact] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
 
   // Column Reordering State
   const [columns, setColumns] = useState(DEFAULT_COLUMNS);
@@ -212,6 +215,10 @@ export function ContactsTable() {
 
   return (
     <div className="flex flex-col h-full">
+      <AddContactModal 
+        isOpen={isAddContactOpen}
+        onClose={() => setIsAddContactOpen(false)}
+      />
       <EmailComposer 
         contact={selectedContact} 
         isOpen={!!selectedContact} 
@@ -256,6 +263,9 @@ export function ContactsTable() {
           </Select>
           <Button variant="outline" size="icon" onClick={() => fetchContacts(true)} disabled={isRefreshing || isLoading}>
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
+          </Button>
+          <Button onClick={() => setIsAddContactOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" /> Add Contact
           </Button>
         </div>
       </div>
