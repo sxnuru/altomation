@@ -29,7 +29,7 @@ export async function getAuthUser() {
   if (!dbUser) {
     dbUser = await prisma.user.create({
       data: {
-        id: session.user.id,
+        id: user.id,
         email,
         name: email,
         role: "user"
