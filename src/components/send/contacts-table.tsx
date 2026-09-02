@@ -46,6 +46,12 @@ export function ContactsTable() {
   const [dragOverColId, setDragOverColId] = useState<string | null>(null);
   const [dragDirection, setDragDirection] = useState<"left" | "right">("left");
 
+  // Column Resizing State
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const [resizingCol, setResizingCol] = useState<string | null>(null);
+  const [startX, setStartX] = useState(0);
+  const [startWidth, setStartWidth] = useState(0);
+
   useEffect(() => {
     const saved = localStorage.getItem("contactsTableColumns");
     if (saved) {
@@ -58,9 +64,19 @@ export function ContactsTable() {
         }
       } catch {}
     }
+    const savedWidths = localStorage.getItem("contactsTableColumnWidths");
+    if (savedWidths) {
+      try {
+        setColumnWidths(JSON.parse(savedWidths));
+      } catch {}
+    }
   }, []);
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
+    if ((e.target as HTMLElement).classList.contains("resizer")) {
+      e.preventDefault();
+      return;
+    }
     setDraggedColId(id);
     e.dataTransfer.effectAllowed = "move";
     if (e.currentTarget instanceof HTMLElement) {
@@ -110,6 +126,40 @@ export function ContactsTable() {
     setColumns(newCols);
     localStorage.setItem("contactsTableColumns", JSON.stringify(newCols));
   };
+
+  const handleResizeStart = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setResizingCol(id);
+    setStartX(e.clientX);
+    const th = (e.currentTarget as HTMLElement).closest("th");
+    setStartWidth(th?.getBoundingClientRect().width || 150);
+  };
+
+  useEffect(() => {
+    if (!resizingCol) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const diffX = e.clientX - startX;
+      const newWidth = Math.max(50, startWidth + diffX);
+      setColumnWidths(prev => {
+        const updated = { ...prev, [resizingCol]: newWidth };
+        localStorage.setItem("contactsTableColumnWidths", JSON.stringify(updated));
+        return updated;
+      });
+    };
+
+    const handleMouseUp = () => {
+      setResizingCol(null);
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [resizingCol, startX, startWidth]);
 
 
   const fetchContacts = useCallback(async (manualRefresh = false) => {
@@ -233,10 +283,18 @@ export function ContactsTable() {
                     onDragOver={(e) => handleDragOver(e, col.id)}
                     onDragLeave={handleDragLeave}
                     onDrop={(e) => handleDrop(e, col.id)}
-                    className={`cursor-grab active:cursor-grabbing select-none hover:bg-muted/50 transition-all ${draggedColId === col.id ? "opacity-30 bg-muted" : ""} ${borderClass}`}
+                    className={`relative cursor-grab active:cursor-grabbing select-none hover:bg-muted/50 transition-all ${draggedColId === col.id ? "opacity-30 bg-muted" : ""} ${borderClass}`}
                     title="Drag to reorder"
+                    style={{ width: columnWidths[col.id] ? `${columnWidths[col.id]}px` : "auto", minWidth: columnWidths[col.id] ? `${columnWidths[col.id]}px` : "150px" }}
                   >
-                    {col.label}
+                    <div className="flex items-center w-full h-full overflow-hidden whitespace-nowrap">
+                      {col.label}
+                    </div>
+                    {/* Resizer */}
+                    <div
+                      onMouseDown={(e) => handleResizeStart(e, col.id)}
+                      className="resizer absolute right-0 top-0 bottom-0 w-[5px] cursor-col-resize hover:bg-primary/50 bg-transparent z-10 touch-none"
+                    />
                   </TableHead>
                 );
               })}
@@ -296,7 +354,11 @@ export function ContactsTable() {
                     }
 
                     return (
-                      <TableCell key={col.id} className={col.id === "email" ? "font-medium" : ""}>
+                      <TableCell 
+                        key={col.id} 
+                        className={col.id === "email" ? "font-medium break-words whitespace-normal" : "break-words whitespace-normal"}
+                        style={{ width: columnWidths[col.id] ? `${columnWidths[col.id]}px` : "auto", minWidth: columnWidths[col.id] ? `${columnWidths[col.id]}px` : "150px", maxWidth: columnWidths[col.id] ? `${columnWidths[col.id]}px` : "none" }}
+                      >
                         {content}
                       </TableCell>
                     );
