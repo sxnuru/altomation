@@ -207,7 +207,7 @@ export async function POST(req: Request) {
 
     await prisma.contact.update({
       where: { id: contact.id },
-      data: { send_status: "Sent" }
+      data: { send_status: "Sent", last_sent_at: new Date() }
     });
 
     return NextResponse.json({ success: true, messageId: data?.id });

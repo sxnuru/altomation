@@ -44,12 +44,21 @@ export async function GET(req: Request) {
                           filter === "bounced" ? "Bounced" : undefined;
     }
 
+    const sort = searchParams.get("sort") || "created_desc";
+    let orderBy: any = { created_at: "desc" };
+    
+    if (sort === "sent_asc") {
+      orderBy = { last_sent_at: { sort: "asc", nulls: "last" } };
+    } else if (sort === "sent_desc") {
+      orderBy = { last_sent_at: { sort: "desc", nulls: "last" } };
+    }
+
     const [contacts, total] = await Promise.all([
       prisma.contact.findMany({
         where,
         skip,
         take: limit,
-        orderBy: { created_at: "desc" },
+        orderBy,
         include: { 
           conversations: true,
           messages: {

@@ -35,6 +35,7 @@ model Contact {
   import_batch    ImportBatch?   @relation(fields: [import_batch_id], references: [id])
   conversations   Conversation[]
   messages        Message[]
+  last_sent_at    DateTime?
   created_at      DateTime       @default(now())
   updated_at      DateTime       @updatedAt
 

@@ -33,6 +33,7 @@ export function ContactsTable() {
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [sort, setSort] = useState("created_desc");
   const [designation, setDesignation] = useState("");
   const [location, setLocation] = useState("");
   const [page, setPage] = useState(1);
@@ -174,6 +175,7 @@ export function ContactsTable() {
       params.set("page", page.toString());
       if (search) params.set("search", search);
       if (filter) params.set("filter", filter);
+      if (sort) params.set("sort", sort);
       if (currentIndustry) params.set("industry", currentIndustry);
       if (designation) params.set("designation", designation);
       if (location) params.set("location", location);
@@ -188,11 +190,11 @@ export function ContactsTable() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, search, filter, currentIndustry, designation, location]);
+  }, [page, search, filter, currentIndustry, designation, location, sort]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, filter, currentIndustry, designation, location]);
+  }, [search, filter, currentIndustry, designation, location, sort]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -259,6 +261,16 @@ export function ContactsTable() {
               <SelectItem value="sent">Sent</SelectItem>
               <SelectItem value="failed">Failed</SelectItem>
               <SelectItem value="bounced">Bounced</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sort} onValueChange={(v) => setSort(v || "created_desc")}>
+            <SelectTrigger className="w-[170px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="created_desc">Newest First</SelectItem>
+              <SelectItem value="sent_desc">Sent Time (Newest)</SelectItem>
+              <SelectItem value="sent_asc">Sent Time (Oldest)</SelectItem>
             </SelectContent>
           </Select>
           <Button variant="outline" size="icon" onClick={() => fetchContacts(true)} disabled={isRefreshing || isLoading}>
