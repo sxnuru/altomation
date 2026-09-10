@@ -44,6 +44,27 @@ export async function GET(req: Request) {
                           filter === "bounced" ? "Bounced" : undefined;
     }
 
+    const sentCountStr = searchParams.get("sentCount");
+    if (sentCountStr !== null && sentCountStr !== "") {
+      const countNum = parseInt(sentCountStr, 10);
+      if (!isNaN(countNum)) {
+        if (countNum === 0) {
+          where.messages = { none: { direction: "sent", status: { in: ["Sent", "Replied"] } } };
+        } else {
+          const grouped = await prisma.message.groupBy({
+            by: ['contact_id'],
+            where: { direction: "sent", status: { in: ["Sent", "Replied"] } },
+            _count: { id: true },
+            having: {
+              id: { _count: { equals: countNum } }
+            }
+          });
+          const validIds = grouped.map(g => g.contact_id);
+          where.id = { in: validIds };
+        }
+      }
+    }
+
     const sort = searchParams.get("sort") || "created_desc";
     let orderBy: any = { created_at: "desc" };
     

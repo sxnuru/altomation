@@ -3,22 +3,19 @@ import prisma from "@/lib/db";
 
 export async function GET() {
   try {
-    const industries = await prisma.contact.findMany({
-      where: {
-        industry: { not: null }
-      },
-      select: {
-        industry: true
-      },
-      distinct: ['industry'],
-      orderBy: {
-        industry: 'asc'
-      }
-    });
+    const stats: { industry: string; count: bigint }[] = await prisma.$queryRaw`
+      SELECT c.industry, COUNT(m.id) as count
+      FROM "Contact" c
+      LEFT JOIN "Message" m ON c.id = m.contact_id AND m.direction = 'sent' AND m.status IN ('Sent', 'Replied')
+      WHERE c.industry IS NOT NULL
+      GROUP BY c.industry
+      ORDER BY c.industry ASC
+    `;
 
-    const uniqueIndustries = industries
-      .map(i => i.industry)
-      .filter((v, i, a) => v && a.indexOf(v) === i); // Ensure valid non-null strings
+    const uniqueIndustries = stats.map(s => ({
+      name: s.industry,
+      sentCount: Number(s.count)
+    }));
 
     return NextResponse.json(uniqueIndustries);
   } catch (error) {

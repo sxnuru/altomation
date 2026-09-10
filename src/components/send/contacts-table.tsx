@@ -36,6 +36,7 @@ export function ContactsTable() {
   const [sort, setSort] = useState("created_desc");
   const [designation, setDesignation] = useState("");
   const [location, setLocation] = useState("");
+  const [sentCount, setSentCount] = useState("");
   const [page, setPage] = useState(1);
   const [data, setData] = useState<any>({ contacts: [], total: 0, totalPages: 1 });
   const [isLoading, setIsLoading] = useState(true);
@@ -179,6 +180,7 @@ export function ContactsTable() {
       if (currentIndustry) params.set("industry", currentIndustry);
       if (designation) params.set("designation", designation);
       if (location) params.set("location", location);
+      if (sentCount) params.set("sentCount", sentCount);
 
       const res = await fetch(`/api/contacts?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch");
@@ -190,11 +192,11 @@ export function ContactsTable() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, search, filter, currentIndustry, designation, location, sort]);
+  }, [page, search, filter, currentIndustry, designation, location, sentCount, sort]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, filter, currentIndustry, designation, location, sort]);
+  }, [search, filter, currentIndustry, designation, location, sentCount, sort]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -249,6 +251,14 @@ export function ContactsTable() {
             placeholder="Location..." 
             value={location}
             onChange={(e) => setLocation(e.target.value)}
+            className="max-w-[150px]"
+          />
+          <Input 
+            type="number"
+            min="0"
+            placeholder="Emails sent (e.g. 1)" 
+            value={sentCount}
+            onChange={(e) => setSentCount(e.target.value)}
             className="max-w-[150px]"
           />
           <Select value={filter} onValueChange={(v) => setFilter(v || "all")}>

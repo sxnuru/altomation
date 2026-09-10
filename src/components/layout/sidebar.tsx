@@ -13,7 +13,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentIndustry = searchParams.get("industry");
-  const [industries, setIndustries] = useState<string[]>([]);
+  const [industries, setIndustries] = useState<{name: string, sentCount: number}[]>([]);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
@@ -158,19 +158,26 @@ export function Sidebar() {
              <div className="my-2 border-b border-muted"></div>
           )}
 
-          {industries.map((industry) => (
+          {industries.map((ind) => (
             <Link
-              key={industry}
-              href={`/send?industry=${encodeURIComponent(industry)}`}
-              title={industry}
+              key={ind.name}
+              href={`/send?industry=${encodeURIComponent(ind.name)}`}
+              title={`${ind.name} (${ind.sentCount} sent)`}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-md text-foreground transition-all hover:bg-muted",
-                currentIndustry === industry ? "bg-muted font-semibold" : "text-muted-foreground",
+                currentIndustry === ind.name ? "bg-muted font-semibold" : "text-muted-foreground",
                 isCollapsed && "justify-center px-0"
               )}
             >
               <Briefcase className="h-4 w-4 shrink-0" />
-              {!isCollapsed && <span className="truncate">{industry}</span>}
+              {!isCollapsed && (
+                <div className="flex items-center justify-between w-full">
+                  <span className="truncate">{ind.name}</span>
+                  <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">
+                    {ind.sentCount}
+                  </span>
+                </div>
+              )}
             </Link>
           ))}
         </nav>
