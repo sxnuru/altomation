@@ -2,50 +2,55 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { getAuthUser } from "@/lib/auth-user";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
+    const page  = parseInt(searchParams.get("page") || "1", 10);
     const limit = 40;
-    const skip = (page - 1) * limit;
-    
-    const search = searchParams.get("search") || "";
-    const filter = searchParams.get("filter") || "all";
+    const skip  = (page - 1) * limit;
+
+    const search      = searchParams.get("search")      || "";
+    const filter      = searchParams.get("filter")      || "all";
+    const industry    = searchParams.get("industry")    || "";
+    const designation = searchParams.get("designation") || "";
+    const location    = searchParams.get("location")    || "";
+    const sort        = searchParams.get("sort")        || "created_desc";
+    const addedBy     = searchParams.get("addedBy")     || "";
+    const sentCountStr = searchParams.get("sentCount");
 
     const where: any = {};
 
     if (search) {
       where.OR = [
-        { email: { contains: search, mode: "insensitive" } },
+        { email:      { contains: search, mode: "insensitive" } },
         { first_name: { contains: search, mode: "insensitive" } },
-        { last_name: { contains: search, mode: "insensitive" } },
-        { company: { contains: search, mode: "insensitive" } },
+        { last_name:  { contains: search, mode: "insensitive" } },
+        { company:    { contains: search, mode: "insensitive" } },
       ];
     }
 
-    const industry = searchParams.get("industry") || "";
     if (industry && industry !== "all") {
       where.industry = { equals: industry, mode: "insensitive" };
     }
 
-    const designation = searchParams.get("designation") || "";
     if (designation && designation !== "all") {
       where.job_title = { contains: designation, mode: "insensitive" };
     }
 
-    const location = searchParams.get("location") || "";
     if (location && location !== "all") {
       where.location = { contains: location, mode: "insensitive" };
     }
 
     if (filter !== "all") {
-      where.send_status = filter === "not_sent" ? "Not Sent" :
-                          filter === "sent" ? "Sent" :
-                          filter === "failed" ? "Failed" : 
-                          filter === "bounced" ? "Bounced" : undefined;
+      where.send_status =
+        filter === "not_sent" ? "Not Sent"  :
+        filter === "sent"     ? "Sent"      :
+        filter === "failed"   ? "Failed"    :
+        filter === "bounced"  ? "Bounced"   : undefined;
     }
 
-    const sentCountStr = searchParams.get("sentCount");
     if (sentCountStr !== null && sentCountStr !== "") {
       const countNum = parseInt(sentCountStr, 10);
       if (!isNaN(countNum)) {
@@ -53,33 +58,27 @@ export async function GET(req: Request) {
           where.messages = { none: { direction: "sent", status: { in: ["Sent", "Replied"] } } };
         } else {
           const grouped = await prisma.message.groupBy({
-            by: ['contact_id'],
+            by: ["contact_id"],
             where: { direction: "sent", status: { in: ["Sent", "Replied"] } },
             _count: { id: true },
-            having: {
-              id: { _count: { equals: countNum } }
-            }
+            having: { id: { _count: { equals: countNum } } },
           });
-          const validIds = grouped.map(g => g.contact_id);
-          where.id = { in: validIds };
+          where.id = { in: grouped.map(g => g.contact_id) };
         }
       }
     }
 
-    const addedBy = searchParams.get("addedBy") || "";
     if (addedBy && addedBy !== "all") {
-      const uploader = await prisma.user.findUnique({ where: { email: addedBy }, select: { id: true } });
+      const uploader = await prisma.user.findUnique({
+        where: { email: addedBy },
+        select: { id: true },
+      });
       where.added_by_id = uploader ? uploader.id : "__no_match__";
     }
 
-    const sort = searchParams.get("sort") || "created_desc";
     let orderBy: any = { created_at: "desc" };
-    
-    if (sort === "sent_asc") {
-      orderBy = { last_sent_at: { sort: "asc", nulls: "last" } };
-    } else if (sort === "sent_desc") {
-      orderBy = { last_sent_at: { sort: "desc", nulls: "last" } };
-    }
+    if (sort === "sent_asc")  orderBy = { last_sent_at: { sort: "asc",  nulls: "last" } };
+    if (sort === "sent_desc") orderBy = { last_sent_at: { sort: "desc", nulls: "last" } };
 
     const [contacts, total] = await Promise.all([
       prisma.contact.findMany({
@@ -87,33 +86,33 @@ export async function GET(req: Request) {
         skip,
         take: limit,
         orderBy,
-        include: { 
+        include: {
           conversations: true,
           messages: {
-            where: { direction: "sent", status: { in: ["Sent", "Replied"] } },
+            where:   { direction: "sent", status: { in: ["Sent", "Replied"] } },
             orderBy: { sent_at: "desc" },
-            take: 1,
-            select: { sent_at: true }
+            take:    1,
+            select:  { sent_at: true },
           },
           _count: {
             select: {
-              messages: { where: { direction: "sent", status: { in: ["Sent", "Replied"] } } }
-            }
+              messages: { where: { direction: "sent", status: { in: ["Sent", "Replied"] } } },
+            },
           },
-          added_by: {
-            select: { email: true }
-          }
-        }
+          added_by: { select: { email: true } },
+        },
       }),
-      prisma.contact.count({ where })
+      prisma.contact.count({ where }),
     ]);
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       contacts,
       total,
       page,
-      totalPages: Math.ceil(total / limit)
+      totalPages: Math.ceil(total / limit),
     });
+    response.headers.set("Cache-Control", "no-store");
+    return response;
 
   } catch (error) {
     console.error("Fetch contacts error:", error);
@@ -123,8 +122,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const authUser = await getAuthUser();
-    const body = await req.json();
+    const [authUser, body] = await Promise.all([getAuthUser(), req.json()]);
     const { email, first_name, last_name, company, job_title, industry, location, phone, website } = body;
 
     if (!email) {
@@ -148,7 +146,7 @@ export async function POST(req: Request) {
         phone,
         website,
         ...(authUser ? { added_by_id: authUser.id } : {}),
-      }
+      },
     });
 
     return NextResponse.json(contact, { status: 201 });

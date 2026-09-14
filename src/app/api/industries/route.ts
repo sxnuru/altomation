@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+
+
 export async function GET() {
   try {
     const stats: { industry: string; count: bigint }[] = await prisma.$queryRaw`
