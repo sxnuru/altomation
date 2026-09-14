@@ -39,6 +39,8 @@ export function ContactsTable() {
   const [designation, setDesignation] = useState("");
   const [location, setLocation] = useState("");
   const [sentCount, setSentCount] = useState("");
+  const [addedBy, setAddedBy] = useState("all");
+  const [uploaders, setUploaders] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [data, setData] = useState<any>({ contacts: [], total: 0, totalPages: 1 });
   const [isLoading, setIsLoading] = useState(true);
@@ -77,6 +79,12 @@ export function ContactsTable() {
         setColumnWidths(JSON.parse(savedWidths));
       } catch {}
     }
+
+    // Fetch uploaders for the Added By filter
+    fetch("/api/contacts/uploaders")
+      .then(r => r.json())
+      .then((emails: string[]) => setUploaders(emails))
+      .catch(() => {});
   }, []);
 
   const handleDragStart = (e: React.DragEvent, id: string) => {
@@ -183,6 +191,7 @@ export function ContactsTable() {
       if (designation) params.set("designation", designation);
       if (location) params.set("location", location);
       if (sentCount) params.set("sentCount", sentCount);
+      if (addedBy && addedBy !== "all") params.set("addedBy", addedBy);
 
       const res = await fetch(`/api/contacts?${params.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch");
@@ -194,11 +203,11 @@ export function ContactsTable() {
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  }, [page, search, filter, currentIndustry, designation, location, sentCount, sort]);
+  }, [page, search, filter, currentIndustry, designation, location, sentCount, sort, addedBy]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, filter, currentIndustry, designation, location, sentCount, sort]);
+  }, [search, filter, currentIndustry, designation, location, sentCount, sort, addedBy]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -285,6 +294,21 @@ export function ContactsTable() {
               <SelectItem value="sent_asc">Sent Time (Oldest)</SelectItem>
             </SelectContent>
           </Select>
+          {uploaders.length > 0 && (
+            <Select value={addedBy} onValueChange={(v) => setAddedBy(v || "all")}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Added by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Accounts</SelectItem>
+                {uploaders.map(email => (
+                  <SelectItem key={email} value={email}>
+                    {email}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <Button variant="outline" size="icon" onClick={() => fetchContacts(true)} disabled={isRefreshing || isLoading}>
             <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
           </Button>

@@ -66,6 +66,12 @@ export async function GET(req: Request) {
       }
     }
 
+    const addedBy = searchParams.get("addedBy") || "";
+    if (addedBy && addedBy !== "all") {
+      const uploader = await prisma.user.findUnique({ where: { email: addedBy }, select: { id: true } });
+      where.added_by_id = uploader ? uploader.id : "__no_match__";
+    }
+
     const sort = searchParams.get("sort") || "created_desc";
     let orderBy: any = { created_at: "desc" };
     
