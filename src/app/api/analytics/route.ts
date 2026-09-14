@@ -39,7 +39,7 @@ export async function GET() {
         COUNT(CASE WHEN m.direction = 'sent' AND m.status IN ('Sent','Replied') AND m.sent_at >= ${weekStart}  AND m.sent_at <  ${weekEnd}  THEN 1 END) AS weekly,
         COUNT(CASE WHEN m.direction = 'sent' AND m.status IN ('Sent','Replied') AND m.sent_at >= ${monthStart} AND m.sent_at <  ${monthEnd} THEN 1 END) AS monthly
       FROM "Message" m
-    `;
+    `);
 
     const approachedContacts = Number(countsRaw[0]?.approached ?? 0);
     const dailySent          = Number(countsRaw[0]?.daily      ?? 0);

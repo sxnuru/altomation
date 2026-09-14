@@ -34,7 +34,7 @@ export async function getAuthUser() {
         name: email,
         role: "user"
       }
-    });
+    }));
   }
 
 

@@ -147,7 +147,7 @@ export async function POST(req: Request) {
         website,
         ...(authUser ? { added_by_id: authUser.id } : {}),
       },
-    });
+    }));
 
     return NextResponse.json(contact, { status: 201 });
   } catch (error) {
