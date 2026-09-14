@@ -25,6 +25,8 @@ const DEFAULT_COLUMNS = [
   { id: "sent_count", label: "Emails Sent" },
   { id: "last_sent", label: "Last Sent" },
   { id: "status", label: "Status" },
+  { id: "added", label: "Added" },
+  { id: "added_by", label: "Added By" },
 ];
 
 export function ContactsTable() {
@@ -382,6 +384,22 @@ export function ContactsTable() {
                         >
                           {c.send_status}
                         </Badge>
+                      );
+                    }
+                    else if (col.id === "added") {
+                      content = c.created_at ? (
+                        <span className="text-muted-foreground text-xs">
+                          {formatDistanceToNow(new Date(c.created_at), { addSuffix: true })}
+                        </span>
+                      ) : "-";
+                    }
+                    else if (col.id === "added_by") {
+                      content = c.added_by?.email ? (
+                        <span className="text-muted-foreground text-xs truncate block max-w-[160px]" title={c.added_by.email}>
+                          {c.added_by.email}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground/50 text-xs">—</span>
                       );
                     }
 

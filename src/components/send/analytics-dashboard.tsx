@@ -18,6 +18,9 @@ const COLORS = [
 export function AnalyticsDashboard() {
   const [data, setData] = useState<{
     approachedContacts: number;
+    dailySent: number;
+    weeklySent: number;
+    monthlySent: number;
     industryStats: any[];
     timeSeriesData: any[];
     emailCountsData: any[];
@@ -58,7 +61,8 @@ export function AnalyticsDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-3">
+      {/* Sent Email Status Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">Total Approached Contacts</CardTitle>
@@ -69,7 +73,39 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
+        <Card className="border-blue-200 bg-blue-50/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-blue-600">Sent Today</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-700">{data.dailySent}</div>
+            <p className="text-xs text-blue-500 mt-1">Emails sent in the last 24 hours</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-violet-200 bg-violet-50/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-violet-600">Sent This Week</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-violet-700">{data.weeklySent}</div>
+            <p className="text-xs text-violet-500 mt-1">Emails sent in the last 7 days</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-emerald-200 bg-emerald-50/40">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-emerald-600">Sent This Month</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-emerald-700">{data.monthlySent}</div>
+            <p className="text-xs text-emerald-500 mt-1">Emails sent in the last 30 days</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card className="md:col-span-3">
           <CardHeader>
             <CardTitle>Total Emails Sent by Industry</CardTitle>
             <CardDescription>Total volume of emails sent per industry</CardDescription>

@@ -17,6 +17,31 @@ export async function GET() {
       }
     });
 
+    // 1b. Emails Sent in the last 1 day, 7 days, and 30 days
+    const [dailySent, weeklySent, monthlySent] = await Promise.all([
+      prisma.message.count({
+        where: {
+          direction: "sent",
+          status: { in: ["Sent", "Replied"] },
+          sent_at: { gte: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000) }
+        }
+      }),
+      prisma.message.count({
+        where: {
+          direction: "sent",
+          status: { in: ["Sent", "Replied"] },
+          sent_at: { gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) }
+        }
+      }),
+      prisma.message.count({
+        where: {
+          direction: "sent",
+          status: { in: ["Sent", "Replied"] },
+          sent_at: { gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) }
+        }
+      }),
+    ]);
+
     // 2. Emails Sent per Industry
     const industryStatsRaw: { industry: string; count: bigint }[] = await prisma.$queryRaw`
       SELECT c.industry, COUNT(m.id) as count
@@ -109,6 +134,9 @@ export async function GET() {
 
     return NextResponse.json({
       approachedContacts,
+      dailySent,
+      weeklySent,
+      monthlySent,
       industryStats,
       timeSeriesData,
       emailCountsData: Array.from(emailCountsMap.values()),

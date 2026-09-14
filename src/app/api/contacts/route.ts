@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
+import { getAuthUser } from "@/lib/auth-user";
 
 export async function GET(req: Request) {
   try {
@@ -92,6 +93,9 @@ export async function GET(req: Request) {
             select: {
               messages: { where: { direction: "sent", status: { in: ["Sent", "Replied"] } } }
             }
+          },
+          added_by: {
+            select: { email: true }
           }
         }
       }),
@@ -113,6 +117,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const authUser = await getAuthUser();
     const body = await req.json();
     const { email, first_name, last_name, company, job_title, industry, location, phone, website } = body;
 
@@ -135,7 +140,8 @@ export async function POST(req: Request) {
         industry,
         location,
         phone,
-        website
+        website,
+        ...(authUser ? { added_by_id: authUser.id } : {}),
       }
     });
 

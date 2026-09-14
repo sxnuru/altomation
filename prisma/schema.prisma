@@ -9,13 +9,15 @@ datasource db {
 }
 
 model User {
-  id         String    @id @default(uuid())
-  email      String    @unique
-  name       String?
-  role       String    @default("user") // "admin" or "user"
-  messages   Message[]
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
+  id              String        @id @default(uuid())
+  email           String        @unique
+  name            String?
+  role            String        @default("user") // "admin" or "user"
+  messages        Message[]
+  added_contacts  Contact[]     @relation("ContactAddedBy")
+  added_batches   ImportBatch[] @relation("BatchAddedBy")
+  created_at      DateTime      @default(now())
+  updated_at      DateTime      @updatedAt
 }
 
 model Contact {
@@ -33,6 +35,8 @@ model Contact {
   send_status     String         @default("Not Sent")
   import_batch_id String?
   import_batch    ImportBatch?   @relation(fields: [import_batch_id], references: [id])
+  added_by_id     String?
+  added_by        User?          @relation("ContactAddedBy", fields: [added_by_id], references: [id])
   conversations   Conversation[]
   messages        Message[]
   last_sent_at    DateTime?
@@ -50,6 +54,8 @@ model ImportBatch {
   invalid_count      Int
   duplicate_count    Int
   contacts           Contact[]
+  added_by_id        String?
+  added_by           User?     @relation("BatchAddedBy", fields: [added_by_id], references: [id])
   created_at         DateTime  @default(now())
 }
 

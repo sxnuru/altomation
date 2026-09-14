@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/db";
 import { z } from "zod";
+import { getAuthUser } from "@/lib/auth-user";
 
 const importSchema = z.object({
   filename: z.string(),
@@ -9,6 +10,7 @@ const importSchema = z.object({
 
 export async function POST(req: Request) {
   try {
+    const authUser = await getAuthUser();
     const body = await req.json();
     const result = importSchema.safeParse(body);
 
@@ -106,6 +108,7 @@ export async function POST(req: Request) {
         valid_count: 0, // we will update later
         invalid_count: invalidCount,
         duplicate_count: 0,
+        ...(authUser ? { added_by_id: authUser.id } : {}),
       }
     });
 
@@ -161,7 +164,8 @@ export async function POST(req: Request) {
       await prisma.contact.createMany({
         data: newContacts.map(c => ({
           ...c,
-          import_batch_id: importBatch.id
+          import_batch_id: importBatch.id,
+          ...(authUser ? { added_by_id: authUser.id } : {}),
         })),
         skipDuplicates: true
       });
