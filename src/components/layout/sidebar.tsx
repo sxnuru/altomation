@@ -40,7 +40,7 @@ export function Sidebar() {
   useEffect(() => {
     const fetchIndustries = async () => {
       try {
-        const res = await fetch("/api/industries");
+        const res = await fetch("/api/industries", { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setIndustries(data);

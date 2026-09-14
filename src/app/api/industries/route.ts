@@ -17,7 +17,9 @@ export async function GET() {
       sentCount: Number(s.count)
     }));
 
-    return NextResponse.json(uniqueIndustries);
+    const response = NextResponse.json(uniqueIndustries);
+    response.headers.set("Cache-Control", "no-store");
+    return response;
   } catch (error) {
     console.error("Fetch industries error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
