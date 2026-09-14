@@ -10,7 +10,7 @@ export default function ReceivedPage() {
         </p>
       </div>
 
-      <div className="flex-1 min-h-0 bg-white border border-border">
+      <div className="flex-1 min-h-0 bg-background border border-border">
         <InboxList />
       </div>
     </div>

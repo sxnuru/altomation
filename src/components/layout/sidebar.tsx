@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -69,7 +70,7 @@ export function Sidebar() {
 
   if (inAdminView) {
     return (
-      <div className={cn("relative flex h-full flex-col border-r bg-white transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
+      <div className={cn("relative flex h-full flex-col border-r bg-background transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
         <div className="flex-1 overflow-y-auto py-4">
           <nav className="grid items-start px-2 text-sm font-medium gap-1">
             <Link
@@ -90,13 +91,14 @@ export function Sidebar() {
         <Button 
           variant="outline" 
           size="icon" 
-          className="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full shadow-sm z-10 bg-white" 
+          className="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full shadow-sm z-10 bg-background" 
           onClick={() => setIsCollapsed(!isCollapsed)}
           title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
         >
           {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
         </Button>
-        <div className="p-4 border-t">
+        <div className="p-4 border-t flex flex-col gap-2">
+          <ThemeToggle isCollapsed={isCollapsed} />
           <Button
             variant="ghost"
             className={cn(
@@ -115,7 +117,7 @@ export function Sidebar() {
   }
 
   return (
-    <div className={cn("relative flex h-full flex-col border-r bg-white transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
+    <div className={cn("relative flex h-full flex-col border-r bg-background transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
       <div className="flex-1 overflow-y-auto py-4">
         <nav className="grid items-start px-2 text-sm font-medium gap-1">
           <Link
@@ -186,13 +188,14 @@ export function Sidebar() {
       <Button 
         variant="outline" 
         size="icon" 
-        className="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full shadow-sm z-10 bg-white" 
+        className="absolute -right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full shadow-sm z-10 bg-background" 
         onClick={() => setIsCollapsed(!isCollapsed)}
         title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
       >
         {isCollapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
       </Button>
-      <div className="p-4 border-t">
+      <div className="p-4 border-t flex flex-col gap-2">
+        <ThemeToggle isCollapsed={isCollapsed} />
         <Button
           variant="ghost"
           className={cn(

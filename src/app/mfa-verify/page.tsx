@@ -77,7 +77,7 @@ export default function MfaVerifyPage() {
 
   return (
     <div className="flex h-screen items-center justify-center bg-muted/30">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-sm border text-center">
+      <div className="w-full max-w-md p-8 bg-background rounded-2xl shadow-sm border text-center">
         <div className="flex flex-col items-center gap-4 mb-8">
           <div className="h-12 w-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
             <ShieldCheck className="h-6 w-6" />

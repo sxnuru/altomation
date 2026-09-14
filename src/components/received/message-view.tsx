@@ -85,7 +85,7 @@ export function MessageView({ message, isOpen, onClose }: MessageViewProps) {
             thread.map((msg, idx) => (
               <div 
                 key={msg.id} 
-                className={`p-4 border ${msg.direction === "sent" ? "bg-muted/30 ml-8" : "bg-white mr-8"} flex flex-col gap-2`}
+                className={`p-4 border ${msg.direction === "sent" ? "bg-muted/30 ml-8" : "bg-background mr-8"} flex flex-col gap-2`}
               >
                 <div className="flex justify-between items-center text-sm text-muted-foreground border-b pb-2 mb-2">
                   <span className="font-medium text-foreground">{msg.from_email}</span>

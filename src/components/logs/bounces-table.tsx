@@ -43,7 +43,7 @@ export function BouncesTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center bg-white p-4 rounded-lg border shadow-sm">
+      <div className="flex justify-between items-center bg-background p-4 rounded-lg border shadow-sm">
         <div>
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-destructive" />
@@ -58,7 +58,7 @@ export function BouncesTable() {
         </Button>
       </div>
 
-      <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+      <div className="bg-background rounded-lg border shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

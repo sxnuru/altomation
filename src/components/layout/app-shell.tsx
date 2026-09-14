@@ -15,10 +15,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Suspense fallback={<div className="w-64 border-r bg-white" />}>
+      <Suspense fallback={<div className="w-64 border-r bg-background" />}>
         <Sidebar />
       </Suspense>
-      <main className="flex-1 overflow-y-auto bg-white p-6 md:p-8 border-l">
+      <main className="flex-1 overflow-y-auto bg-background p-6 md:p-8 border-l">
         {children}
       </main>
     </div>

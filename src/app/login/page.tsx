@@ -49,7 +49,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex h-screen items-center justify-center bg-muted/30">
-      <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-sm border">
+      <div className="w-full max-w-md p-8 bg-background rounded-2xl shadow-sm border">
         <div className="flex flex-col gap-2 mb-8">
           <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
           <p className="text-muted-foreground text-sm">Sign in to your account</p>
