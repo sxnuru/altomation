@@ -79,7 +79,7 @@ export function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-700">{data.dailySent}</div>
-            <p className="text-xs text-blue-500 mt-1">Emails sent in the last 24 hours</p>
+            <p className="text-xs text-blue-500 mt-1">9:00 AM – 9:00 PM today</p>
           </CardContent>
         </Card>
 
@@ -89,7 +89,7 @@ export function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-violet-700">{data.weeklySent}</div>
-            <p className="text-xs text-violet-500 mt-1">Emails sent in the last 7 days</p>
+            <p className="text-xs text-violet-500 mt-1">Monday – Sunday (current week)</p>
           </CardContent>
         </Card>
 
@@ -99,7 +99,7 @@ export function AnalyticsDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-emerald-700">{data.monthlySent}</div>
-            <p className="text-xs text-emerald-500 mt-1">Emails sent in the last 30 days</p>
+            <p className="text-xs text-emerald-500 mt-1">1st – last day of current month</p>
           </CardContent>
         </Card>
       </div>

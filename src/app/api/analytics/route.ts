@@ -17,27 +17,52 @@ export async function GET() {
       }
     });
 
-    // 1b. Emails Sent in the last 1 day, 7 days, and 30 days
+    // 1b. Calendar-based sent counts (UTC+5 / PKT timezone)
+    //     Daily  : 9 AM – 9 PM today
+    //     Weekly : Monday 00:00 – Sunday 23:59
+    //     Monthly: 1st 00:00 – last day 23:59
+    const TZ_OFFSET_MS = 5 * 60 * 60 * 1000; // UTC+5
+
+    // Current local date components in UTC+5
+    const nowLocal = new Date(now.getTime() + TZ_OFFSET_MS);
+    const localYear  = nowLocal.getUTCFullYear();
+    const localMonth = nowLocal.getUTCMonth();
+    const localDate  = nowLocal.getUTCDate();
+    const localDay   = nowLocal.getUTCDay(); // 0=Sun … 6=Sat
+
+    // Daily: 9 AM → 9 PM in UTC+5, expressed as UTC
+    const dailyStart = new Date(Date.UTC(localYear, localMonth, localDate,  9, 0, 0) - TZ_OFFSET_MS);
+    const dailyEnd   = new Date(Date.UTC(localYear, localMonth, localDate, 21, 0, 0) - TZ_OFFSET_MS);
+
+    // Weekly: Monday 00:00 → Sunday 23:59:59 in UTC+5
+    const daysFromMonday = localDay === 0 ? 6 : localDay - 1;
+    const weekStart = new Date(Date.UTC(localYear, localMonth, localDate - daysFromMonday,  0,  0,  0) - TZ_OFFSET_MS);
+    const weekEnd   = new Date(Date.UTC(localYear, localMonth, localDate - daysFromMonday + 7, 0, 0, 0) - TZ_OFFSET_MS); // exclusive
+
+    // Monthly: 1st 00:00 → last day 23:59:59 in UTC+5
+    const monthStart = new Date(Date.UTC(localYear, localMonth,     1, 0, 0, 0) - TZ_OFFSET_MS);
+    const monthEnd   = new Date(Date.UTC(localYear, localMonth + 1, 1, 0, 0, 0) - TZ_OFFSET_MS); // exclusive (next month's 1st)
+
     const [dailySent, weeklySent, monthlySent] = await Promise.all([
       prisma.message.count({
         where: {
           direction: "sent",
           status: { in: ["Sent", "Replied"] },
-          sent_at: { gte: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000) }
+          sent_at: { gte: dailyStart, lte: dailyEnd }
         }
       }),
       prisma.message.count({
         where: {
           direction: "sent",
           status: { in: ["Sent", "Replied"] },
-          sent_at: { gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) }
+          sent_at: { gte: weekStart, lt: weekEnd }
         }
       }),
       prisma.message.count({
         where: {
           direction: "sent",
           status: { in: ["Sent", "Replied"] },
-          sent_at: { gte: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) }
+          sent_at: { gte: monthStart, lt: monthEnd }
         }
       }),
     ]);
