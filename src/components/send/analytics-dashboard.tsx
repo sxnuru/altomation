@@ -73,32 +73,32 @@ export function AnalyticsDashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200 bg-blue-50/40">
+        <Card className="border-blue-200 bg-blue-50/40 dark:border-blue-900 dark:bg-blue-900/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-blue-600">Sent Today</CardTitle>
+            <CardTitle className="text-sm font-medium text-blue-600 dark:text-blue-400">Sent Today</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-700">{data.dailySent}</div>
+            <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">{data.dailySent}</div>
             <p className="text-xs text-blue-500 mt-1">9:00 AM – 9:00 PM today</p>
           </CardContent>
         </Card>
 
-        <Card className="border-violet-200 bg-violet-50/40">
+        <Card className="border-violet-200 bg-violet-50/40 dark:border-violet-900 dark:bg-violet-900/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-violet-600">Sent This Week</CardTitle>
+            <CardTitle className="text-sm font-medium text-violet-600 dark:text-violet-400">Sent This Week</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-violet-700">{data.weeklySent}</div>
+            <div className="text-2xl font-bold text-violet-700 dark:text-violet-300">{data.weeklySent}</div>
             <p className="text-xs text-violet-500 mt-1">Monday – Sunday (current week)</p>
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-200 bg-emerald-50/40">
+        <Card className="border-emerald-200 bg-emerald-50/40 dark:border-emerald-900 dark:bg-emerald-900/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-600">Sent This Month</CardTitle>
+            <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Sent This Month</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-700">{data.monthlySent}</div>
+            <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{data.monthlySent}</div>
             <p className="text-xs text-emerald-500 mt-1">1st – last day of current month</p>
           </CardContent>
         </Card>
