@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import prisma, { withRetry } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const uploaders = await prisma.user.findMany({
-      select: { email: true },
-      orderBy: { email: "asc" }
-    });
+    const uploaders = await withRetry(() =>
+      prisma.user.findMany({
+        select: { email: true },
+        orderBy: { email: "asc" },
+      })
+    );
 
     return NextResponse.json(uploaders.map(u => u.email));
   } catch (error) {

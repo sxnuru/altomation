@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import prisma, { withRetry } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
 
 export async function GET() {
   try {
@@ -26,7 +27,7 @@ export async function GET() {
     const monthEnd   = new Date(Date.UTC(localYear, localMonth + 1, 1, 0, 0, 0) - TZ_OFFSET_MS);
 
     // Single aggregated query for all scalar counts (1 DB round-trip)
-    const countsRaw = await prisma.$queryRaw<[{
+    const countsRaw = await withRetry(() => prisma.$queryRaw<[{
       approached: bigint;
       daily: bigint;
       weekly: bigint;
@@ -47,7 +48,7 @@ export async function GET() {
 
     // Chart queries in parallel (3 round-trips total instead of 7)
     const [industryStatsRaw, timeSeriesRaw, emailCountsRaw] = await Promise.all([
-      prisma.$queryRaw<{ industry: string; count: bigint }[]>`
+      withRetry(() => prisma.$queryRaw<{ industry: string; count: bigint }[]>`
         SELECT c.industry, COUNT(m.id) AS count
         FROM "Contact" c
         LEFT JOIN "Message" m
@@ -55,8 +56,8 @@ export async function GET() {
         WHERE c.industry IS NOT NULL
         GROUP BY c.industry
         ORDER BY count DESC
-      `,
-      prisma.$queryRaw<{ date: Date; industry: string; count: bigint }[]>`
+      `),
+      withRetry(() => prisma.$queryRaw<{ date: Date; industry: string; count: bigint }[]>`
         SELECT DATE(m.created_at) AS date, c.industry, COUNT(m.id) AS count
         FROM "Message" m
         JOIN "Contact" c ON m.contact_id = c.id
@@ -66,8 +67,8 @@ export async function GET() {
           AND c.industry IS NOT NULL
         GROUP BY DATE(m.created_at), c.industry
         ORDER BY DATE(m.created_at) ASC, c.industry ASC
-      `,
-      prisma.$queryRaw<{ industry: string; message_count: bigint; contact_count: number }[]>`
+      `),
+      withRetry(() => prisma.$queryRaw<{ industry: string; message_count: bigint; contact_count: number }[]>`
         WITH counts AS (
           SELECT c.industry, c.id, COUNT(m.id) AS message_count
           FROM "Contact" c
@@ -81,7 +82,7 @@ export async function GET() {
         WHERE message_count > 0
         GROUP BY industry, message_count
         ORDER BY industry, message_count
-      `,
+      `),
     ]);
 
     // Map industry stats

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import prisma from "@/lib/db";
+import prisma, { withRetry } from "@/lib/db";
 
 export async function getAuthUser() {
   const supabase = await createClient();
@@ -22,12 +22,12 @@ export async function getAuthUser() {
 
   // Sync to database
   console.log("Syncing user to database:", email);
-  let dbUser = await prisma.user.findUnique({
+  let dbUser = await withRetry(() => prisma.user.findUnique({
     where: { email }
-  });
+  }));
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
+    dbUser = await withRetry(() => prisma.user.create({
       data: {
         id: user.id,
         email,

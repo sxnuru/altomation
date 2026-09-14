@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/db";
+import prisma, { withRetry } from "@/lib/db";
 import { getAuthUser } from "@/lib/auth-user";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +81,7 @@ export async function GET(req: Request) {
     if (sort === "sent_desc") orderBy = { last_sent_at: { sort: "desc", nulls: "last" } };
 
     const [contacts, total] = await Promise.all([
-      prisma.contact.findMany({
+      withRetry(() => prisma.contact.findMany({
         where,
         skip,
         take: limit,
@@ -101,8 +101,8 @@ export async function GET(req: Request) {
           },
           added_by: { select: { email: true } },
         },
-      }),
-      prisma.contact.count({ where }),
+      })),
+      withRetry(() => prisma.contact.count({ where })),
     ]);
 
     const response = NextResponse.json({
@@ -129,12 +129,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email is required" }, { status: 400 });
     }
 
-    const existing = await prisma.contact.findFirst({ where: { email } });
+    const existing = await withRetry(() => prisma.contact.findFirst({ where: { email } }));
     if (existing) {
       return NextResponse.json({ error: "Contact with this email already exists" }, { status: 400 });
     }
 
-    const contact = await prisma.contact.create({
+    const contact = await withRetry(() => prisma.contact.create({
       data: {
         email,
         first_name,
